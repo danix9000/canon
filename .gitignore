@@ -1,0 +1,16 @@
+# Binary
+/canon
+
+# Log files
+*.log
+log.txt
+
+# OS files
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

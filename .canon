@@ -1,0 +1,59 @@
+# Run with logs
+LOG=log.txt cargo run
+
+# Execute all unit and integration tests.
+cargo test
+
+# Execute integration tests.
+cargo test --test integration_test
+
+# Compile Canon and its dependencies.
+cargo build
+
+# Format using rustfmt.
+cargo fmt
+
+# Check for common mistakes and improvments.
+cargo clippy
+
+# Check for common mistakes and improvments. Automatically apply lint suggestions,
+cargo clippy --fix
+
+# Check for common mistakes and improvments. Automatically apply lint suggestions, even if changes are unstaged or uncommitted.
+cargo clippy --fix --allow-dirty --allow-staged
+
+# Check for common mistakes and improvments plus lints which are rather strict or have occasional false positives.
+cargo clippy -- -W clippy::pedantic
+
+# Check for common mistakes and improvments plus:
+#  - lints which are rather strict or have occasional false positives
+#  - lints which prevent the use of language and library features
+#  - lints for the cargo manifest
+cargo clippy -- -W clippy::pedantic -W clippy::restriction -W clippy::cargo
+
+# Remove artifacts that cargo has generated in the past.
+cargo clean
+
+# Run precommit checks.
+make precommit
+
+# Run the build-lint-test GitHub workflow locally.
+act -j build-lint-test
+
+# Run the build-lint-test GitHub workflow locally. Leave the Docker container running.
+act -j build-lint-test --reuse
+
+# Reload the current zsh session.
+omz reload
+
+# Reload the PowerShell profile on Windows.
+. $PROFILE
+
+# Set LOG on Windows.
+$env:LOG = "tmp/canon.log"
+
+# Tail log on Windows.
+Get-Content -Path tmp\canon.log -Wait
+
+# Reset the terminal
+reset
