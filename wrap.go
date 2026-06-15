@@ -110,11 +110,11 @@ func isAlphaWord(s string) bool {
 // fragment models a textwrap Fragment with width, whitespace, and penalty.
 // This matches the textwrap Word struct behavior.
 type wrapFragment struct {
-	word           string  // the text content
-	wordWidth      float64 // display width of text
-	whitespaceW    float64 // trailing whitespace width (space after this word)
-	penaltyW       float64 // penalty width (1 for hyphen, 0 otherwise)
-	penaltyText    string  // "-" if hyphenated break, "" otherwise
+	word        string  // the text content
+	wordWidth   float64 // display width of text
+	whitespaceW float64 // trailing whitespace width (space after this word)
+	penaltyW    float64 // penalty width (1 for hyphen, 0 otherwise)
+	penaltyText string  // "-" if hyphenated break, "" otherwise
 }
 
 func buildWrapFragments(text string, h *hyphenator) []wrapFragment {
@@ -178,7 +178,7 @@ const (
 	nlinePenalty          = 1000
 	overflowPenalty       = 50 * 50
 	shortLastLineFraction = 4
-	shortLastLinePenalty   = 25
+	shortLastLinePenalty  = 25
 	hyphenPenalty         = 25
 )
 

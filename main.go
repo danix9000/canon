@@ -49,6 +49,8 @@ func run() (*string, error) {
 func initLog() {
 	logFile := os.Getenv("LOG")
 	if logFile == "" {
+		// Discard all log output when no log file is configured
+		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 		return
 	}
 	f, err := os.Create(logFile)

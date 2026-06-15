@@ -82,7 +82,7 @@ func TestWrapText(t *testing.T) {
 
 func TestHyphenate(t *testing.T) {
 	initHyphenator()
-	
+
 	breaks := defaultHyphenator.hyphenate("directory")
 	word := []rune("directory")
 	var parts []string
@@ -92,11 +92,10 @@ func TestHyphenate(t *testing.T) {
 		prev = bp
 	}
 	parts = append(parts, string(word[prev:]))
-	
+
 	result := strings.Join(parts, " ")
 	expected := "di- rec- tory"
 	if result != expected {
 		t.Errorf("hyphenation of 'directory': got %q, want %q", result, expected)
 	}
 }
-

@@ -1,10 +1,10 @@
 package main
 
 type Item struct {
-	Command             Command
-	DescriptionLines    []string
-	CurrentDescLine     int
-	CmdScrollOffset     int
+	Command          Command
+	DescriptionLines []string
+	CurrentDescLine  int
+	CmdScrollOffset  int
 }
 
 func (it *Item) GetCmd() string {

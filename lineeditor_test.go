@@ -4,10 +4,10 @@ import "testing"
 
 func TestDeletePrevWord(t *testing.T) {
 	tests := []struct {
-		index    int
-		input    string
-		wantIdx  int
-		wantStr  string
+		index   int
+		input   string
+		wantIdx int
+		wantStr string
 	}{
 		{0, "", 0, ""},
 		{4, "foo bar baz", 0, "bar baz"},
