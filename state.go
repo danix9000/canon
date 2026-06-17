@@ -436,8 +436,9 @@ func (s *State) Insert(input string) {
 }
 
 type FilteredItem struct {
-	Item         *Item
-	CharsMatched []int
+	Item             *Item
+	CharsMatched     []int
+	DescCharsMatched []int
 }
 
 func (s *State) GetFilteredItems() []FilteredItem {
@@ -449,8 +450,9 @@ func (s *State) GetFilteredItems() []FilteredItem {
 	var result []FilteredItem
 	for _, m := range s.filteredMatches[s.windowStartIndex:end] {
 		result = append(result, FilteredItem{
-			Item:         &s.items[m.ItemIdx],
-			CharsMatched: m.CharsMatched,
+			Item:             &s.items[m.ItemIdx],
+			CharsMatched:     m.CharsMatched,
+			DescCharsMatched: m.DescCharsMatched,
 		})
 	}
 	return result

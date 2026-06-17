@@ -377,19 +377,26 @@ func drawItems(out io.Writer, state *State) {
 	}
 
 	var currentItem *Item
+	var descMatchIndices []int
 	if len(items) > 0 && state.GetCurrentSelection() < len(items) {
-		currentItem = items[state.GetCurrentSelection()].Item
+		sel := items[state.GetCurrentSelection()]
+		currentItem = sel.Item
+		descMatchIndices = sel.DescCharsMatched
 	}
-	drawPreview(out, state, currentItem)
+	drawPreview(out, state, currentItem, descMatchIndices)
 }
 
-func drawPreview(out io.Writer, state *State, currentItem *Item) {
+func drawPreview(out io.Writer, state *State, currentItem *Item, descMatchIndices []int) {
 	var lines []string
+	var lineOffsets []int // character offset of each line within the original description
 	if currentItem != nil {
 		allLines := currentItem.GetDescriptionLines()
+		lineOffsets = descriptionLineOffsets(currentItem.Command.Desc, allLines)
+
 		startLine := currentItem.GetCurrentDescLine()
 		if startLine < len(allLines) {
 			lines = allLines[startLine:]
+			lineOffsets = lineOffsets[startLine:]
 		}
 	}
 
@@ -397,16 +404,76 @@ func drawPreview(out io.Writer, state *State, currentItem *Item) {
 	cursorXPos := 4 + state.GetCursorX()
 	cursorYPos := state.GetCursorY()
 
+	descIndexSet := make(map[int]bool, len(descMatchIndices))
+	for _, idx := range descMatchIndices {
+		descIndexSet[idx] = true
+	}
+
 	for i := 0; i < state.GetDescH(); i++ {
 		var line string
 		if i < len(lines) {
 			line = lines[i]
 		}
 		line = fitWidth(line, state.GetDescWidth(), true)
+
+		if i < len(lines) && i < len(lineOffsets) {
+			lineMatchIndices := mapDescIndicesToLine(lineOffsets[i], len([]rune(lines[i])), descIndexSet)
+			if len(lineMatchIndices) > 0 {
+				line = highlightMatches(line, lineMatchIndices)
+			}
+		}
+
 		fmt.Fprint(out, ansiMoveTo(state.GetDescX(), appY+3+i))
 		fmt.Fprint(out, line)
 		fmt.Fprint(out, ansiMoveTo(cursorXPos, cursorYPos))
 	}
+}
+
+// descriptionLineOffsets computes the starting character offset of each
+// wrapped line within the original description text.
+func descriptionLineOffsets(originalDesc string, wrappedLines []string) []int {
+	offsets := make([]int, len(wrappedLines))
+	pos := 0
+	descRunes := []rune(originalDesc)
+
+	for i, line := range wrappedLines {
+		offsets[i] = pos
+		lineRunes := []rune(line)
+
+		// Skip through the original description to find where this line's
+		// content ends. Wrapped lines may omit trailing spaces and hyphens
+		// may be inserted, so we match character by character.
+		matched := 0
+		for pos < len(descRunes) && matched < len(lineRunes) {
+			if descRunes[pos] == lineRunes[matched] {
+				matched++
+				pos++
+			} else if lineRunes[matched] == '-' && matched == len(lineRunes)-1 {
+				// Hyphen inserted by word wrapping — not in the original
+				matched++
+			} else if descRunes[pos] == '\n' {
+				pos++
+			} else {
+				pos++
+			}
+		}
+		// Skip trailing whitespace/newlines between wrapped lines
+		for pos < len(descRunes) && (descRunes[pos] == ' ' || descRunes[pos] == '\n') {
+			pos++
+		}
+	}
+
+	return offsets
+}
+
+func mapDescIndicesToLine(lineOffset int, lineLen int, descIndexSet map[int]bool) []int {
+	var indices []int
+	for j := 0; j < lineLen; j++ {
+		if descIndexSet[lineOffset+j] {
+			indices = append(indices, j)
+		}
+	}
+	return indices
 }
 
 func drawQuery(out io.Writer, state *State) {

@@ -1,8 +1,9 @@
 package main
 
 type MatchResult struct {
-	ItemIdx      int
-	CharsMatched []int
+	ItemIdx          int
+	CharsMatched     []int
+	DescCharsMatched []int
 }
 
 func fuzzyMatch(items []Item, query string) []MatchResult {
@@ -17,16 +18,25 @@ func fuzzyMatch(items []Item, query string) []MatchResult {
 	queryRunes := []rune(query)
 
 	type scored struct {
-		index   int
-		score   int
-		matched []int
+		index       int
+		score       int
+		matched     []int
+		descMatched []int
 	}
 	var matches []scored
 
 	for idx, item := range items {
-		s, matched := fuzzyScore([]rune(item.GetCmd()), queryRunes)
-		if s >= 0 {
-			matches = append(matches, scored{index: idx, score: s, matched: matched})
+		cmdScore, cmdMatched := fuzzyScore([]rune(item.GetCmd()), queryRunes)
+		_, descMatched := fuzzyScore([]rune(item.Command.Desc), queryRunes)
+
+		if cmdScore >= 0 {
+			matches = append(matches, scored{index: idx, score: cmdScore, matched: cmdMatched, descMatched: descMatched})
+			continue
+		}
+		// Fall back to description-only match for ranking
+		descScore, _ := fuzzyScore([]rune(item.Command.Desc), queryRunes)
+		if descScore >= 0 {
+			matches = append(matches, scored{index: idx, score: descScore, matched: nil, descMatched: descMatched})
 		}
 	}
 
@@ -45,8 +55,9 @@ func fuzzyMatch(items []Item, query string) []MatchResult {
 	results := make([]MatchResult, len(matches))
 	for i, m := range matches {
 		results[i] = MatchResult{
-			ItemIdx:      m.index,
-			CharsMatched: m.matched,
+			ItemIdx:          m.index,
+			CharsMatched:     m.matched,
+			DescCharsMatched: m.descMatched,
 		}
 	}
 
@@ -98,20 +109,51 @@ func fuzzyScore(text, pattern []rune) (int, []int) {
 }
 
 func fuzzyMatchPositions(text, pattern []rune) []int {
-	// Find the best match positions using a greedy forward scan
-	// that prefers matches at separators and consecutive positions
-	positions := make([]int, 0, len(pattern))
-	pi := 0
-	for ti := 0; ti < len(text) && pi < len(pattern); ti++ {
-		if text[ti] == pattern[pi] {
-			positions = append(positions, ti)
-			pi++
+	var bestPositions []int
+	bestScore := -1
+
+	for start := 0; start <= len(text)-len(pattern); start++ {
+		if text[start] != pattern[0] {
+			continue
+		}
+
+		positions := make([]int, 0, len(pattern))
+		positions = append(positions, start)
+		pi := 1
+		for ti := start + 1; ti < len(text) && pi < len(pattern); ti++ {
+			if text[ti] == pattern[pi] {
+				positions = append(positions, ti)
+				pi++
+			}
+		}
+		if pi < len(pattern) {
+			continue
+		}
+
+		score := positionScore(text, positions)
+		if score > bestScore {
+			bestScore = score
+			bestPositions = positions
 		}
 	}
-	if pi < len(pattern) {
-		return nil
+
+	return bestPositions
+}
+
+func positionScore(text []rune, positions []int) int {
+	score := 0
+	for i, pos := range positions {
+		if i > 0 && pos == positions[i-1]+1 {
+			score += 8
+		}
+		if pos > 0 && isFuzzySeparator(text[pos-1]) {
+			score += 6
+		}
+		if pos == 0 {
+			score += 6
+		}
 	}
-	return positions
+	return score
 }
 
 func isFuzzySeparator(r rune) bool {
