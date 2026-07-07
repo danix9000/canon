@@ -8,8 +8,9 @@ import (
 )
 
 type Command struct {
-	Cmd  string
-	Desc string
+	Cmd    string
+	Desc   string
+	Source string
 }
 
 func readCommands() ([]Command, error) {
@@ -32,7 +33,12 @@ func readCommands() ([]Command, error) {
 }
 
 func readLocalFile() ([]Command, error) {
-	return readFile(".canon")
+	cwd, err := os.Getwd()
+	if err != nil {
+		return []Command{}, nil
+	}
+	source := filepath.Base(cwd) + "/.canon"
+	return readFile(".canon", source)
 }
 
 func readUserFile() ([]Command, error) {
@@ -40,10 +46,10 @@ func readUserFile() ([]Command, error) {
 	if err != nil {
 		return []Command{}, nil
 	}
-	return readFile(filepath.Join(home, ".canon"))
+	return readFile(filepath.Join(home, ".canon"), "~/.canon")
 }
 
-func readFile(path string) ([]Command, error) {
+func readFile(path string, source string) ([]Command, error) {
 	info, err := os.Stat(path)
 	if err != nil || info.IsDir() {
 		return []Command{}, nil
@@ -84,8 +90,9 @@ func readFile(path string) ([]Command, error) {
 			}
 
 			commands = append(commands, Command{
-				Cmd:  line,
-				Desc: strings.Join(comments, "\n"),
+				Cmd:    line,
+				Desc:   strings.Join(comments, "\n"),
+				Source: source,
 			})
 			comments = nil
 		}

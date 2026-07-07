@@ -427,6 +427,46 @@ func drawPreview(out io.Writer, state *State, currentItem *Item, descMatchIndice
 		fmt.Fprint(out, line)
 		fmt.Fprint(out, ansiMoveTo(cursorXPos, cursorYPos))
 	}
+
+	drawSourceLabel(out, state, currentItem)
+}
+
+func drawSourceLabel(out io.Writer, state *State, currentItem *Item) {
+	appY := state.GetAppY()
+	cursorXPos := 4 + state.GetCursorX()
+	cursorYPos := state.GetCursorY()
+
+	borderY := appY + height - 1
+	descX := state.GetDescX()
+	tw := state.GetTerminalWidth()
+	availWidth := tw - descX + 1
+
+	var source string
+	if currentItem != nil {
+		source = currentItem.Command.Source
+	}
+
+	fmt.Fprint(out, ansiMoveTo(descX-1, borderY))
+
+	if source != "" {
+		label := "[ " + source + " ]"
+		labelWidth := len([]rune(label))
+		remaining := availWidth - 1 - labelWidth - 1
+		if remaining < 0 {
+			remaining = 0
+		}
+		fmt.Fprint(out, "─")
+		fmt.Fprint(out, ansiDim())
+		fmt.Fprint(out, label)
+		fmt.Fprint(out, ansiReset())
+		fmt.Fprint(out, strings.Repeat("─", remaining))
+		fmt.Fprint(out, "╯")
+	} else {
+		segment := strings.Repeat("─", availWidth-1) + "╯"
+		fmt.Fprint(out, segment)
+	}
+
+	fmt.Fprint(out, ansiMoveTo(cursorXPos, cursorYPos))
 }
 
 // descriptionLineOffsets computes the starting character offset of each

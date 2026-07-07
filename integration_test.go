@@ -80,6 +80,25 @@ func createCanonFile(t *testing.T, name string, content string) {
 	}
 }
 
+func createLocalCanonFile(t *testing.T, name string, dir string, content string) {
+	t.Helper()
+	runnerDir := os.Getenv("RUNNER_TEMP")
+	if runnerDir == "" {
+		runnerDir = "/tmp/canon"
+	}
+	home := fmt.Sprintf("%s/%s", runnerDir, name)
+	dirPath := fmt.Sprintf("%s/%s", home, dir)
+	err := os.MkdirAll(dirPath, 0755)
+	if err != nil {
+		t.Fatalf("Failed to create directory: %s", err)
+	}
+	path := fmt.Sprintf("%s/.canon", dirPath)
+	err = os.WriteFile(path, []byte(content+"\n"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create local .canon: %s", err)
+	}
+}
+
 func sendKeys(t *testing.T, name string, keys ...string) {
 	t.Helper()
 	args := append([]string{"send", "-s", name}, keys...)
@@ -156,7 +175,7 @@ func TestDirectCommand(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"Down"}, dedent(`
@@ -170,7 +189,7 @@ func TestDirectCommand(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"ech"}, dedent(`
@@ -184,7 +203,7 @@ func TestDirectCommand(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"Enter"}, dedent(`
@@ -217,7 +236,7 @@ func TestZshWidget(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"Enter"}, dedent(`
@@ -253,7 +272,7 @@ func TestMatching(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"foo"}, dedent(`
@@ -267,7 +286,7 @@ func TestMatching(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 	})
 }
@@ -294,7 +313,7 @@ func TestQueryScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name,
@@ -354,7 +373,7 @@ func TestCommandHorizontalScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Shift+Right scrolls right: left ellipsis appears, right ellipsis stays
@@ -369,7 +388,7 @@ func TestCommandHorizontalScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Continue scrolling right
@@ -384,7 +403,7 @@ func TestCommandHorizontalScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Shift+Left scrolls back left
@@ -399,7 +418,7 @@ func TestCommandHorizontalScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Scroll all the way back: left ellipsis disappears, right ellipsis returns
@@ -414,7 +433,7 @@ func TestCommandHorizontalScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 	})
 }
@@ -440,7 +459,7 @@ func TestCommandWordScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Shift+Alt+Right jumps forward by one word
@@ -455,7 +474,7 @@ func TestCommandWordScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Another word jump forward
@@ -470,7 +489,7 @@ func TestCommandWordScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Shift+Alt+Left jumps back by one word
@@ -485,7 +504,7 @@ func TestCommandWordScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Jump back further
@@ -500,7 +519,7 @@ func TestCommandWordScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Jump back to start
@@ -515,7 +534,7 @@ func TestCommandWordScrolling(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 	})
 }
@@ -542,7 +561,7 @@ func TestAltBackspaceDeletesWord(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		// Type a multi-word query
@@ -587,7 +606,7 @@ func TestAltBackspaceDeletesWord(t *testing.T) {
 			│                                      │                                       │
 			│                                      │                                       │
 			│                                      │                                       │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 	})
 }
@@ -621,7 +640,7 @@ func TestDescriptionVerticalScrolling(t *testing.T) {
 			│                                      │ It is really surprisingly long.       │
 			│                                      │ But if you press on Shift and Down,   │
 			│                                      │ you'll be able to read it fully.      │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"S-Down"}, dedent(`
@@ -635,7 +654,7 @@ func TestDescriptionVerticalScrolling(t *testing.T) {
 			│                                      │ But if you press on Shift and Down,   │
 			│                                      │ you'll be able to read it fully.      │
 			│                                      │ Including this very last line!        │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
 		`))
 
 		sendAndExpectScreen(t, name, []string{"S-Up"}, dedent(`
@@ -649,7 +668,51 @@ func TestDescriptionVerticalScrolling(t *testing.T) {
 			│                                      │ It is really surprisingly long.       │
 			│                                      │ But if you press on Shift and Down,   │
 			│                                      │ you'll be able to read it fully.      │
-			╰──────────────────────────────────────┴───────────────────────────────────────╯
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
+		`))
+	})
+}
+
+func TestSourceDisplay(t *testing.T) {
+	runIntegrationTest(t, "source_display", func(t *testing.T, name string) {
+		createCanonFile(t, name, dedent(`
+			# Global command from home
+			echo global
+		`))
+
+		createLocalCanonFile(t, name, "project", dedent(`
+			# Local command from project
+			echo local
+		`))
+
+		// cd into the project subdirectory and run canon
+		sendAndExpectScreen(t, name, []string{"cd project && canon", "Enter"}, dedent(`
+			> cd project && canon
+			┌──────────────────────────────────────────────────────────────────────────────╮
+			│ >                                                                            │
+			├──────────────────────────────────────┬───────────────────────────────────────┤
+			│ > echo global                        │ Global command from home              │
+			│   echo local                         │                                       │
+			│                                      │                                       │
+			│                                      │                                       │
+			│                                      │                                       │
+			│                                      │                                       │
+			╰──────────────────────────────────────┴─[ ~/.canon ]──────────────────────────╯
+		`))
+
+		// Navigate to the local command — source changes to project/.canon
+		sendAndExpectScreen(t, name, []string{"Down"}, dedent(`
+			> cd project && canon
+			┌──────────────────────────────────────────────────────────────────────────────╮
+			│ >                                                                            │
+			├──────────────────────────────────────┬───────────────────────────────────────┤
+			│   echo global                        │ Local command from project            │
+			│ > echo local                         │                                       │
+			│                                      │                                       │
+			│                                      │                                       │
+			│                                      │                                       │
+			│                                      │                                       │
+			╰──────────────────────────────────────┴─[ project/.canon ]────────────────────╯
 		`))
 	})
 }

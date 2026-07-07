@@ -414,6 +414,10 @@ func ansiBold() string {
 	return "\x1B[1m"
 }
 
+func ansiDim() string {
+	return "\x1B[2m"
+}
+
 func ansiReset() string {
 	return "\x1B[0m"
 }
