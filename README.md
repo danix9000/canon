@@ -1,6 +1,12 @@
 # Canon
 
-Canon is a CLI for accessing and sharing common bash commands. It is currently WIP.
+A fuzzy command launcher for your terminal. Define common commands in a `.canon` file, then launch Canon to search, pick, and run them.
+
+## Install
+
+```
+brew install danix9000/tap/canon
+```
 
 ## Usage
 
@@ -17,12 +23,6 @@ cargo clippy
 Lines starting with `#` become the description for the command that follows.
 
 Launch `canon`, type to fuzzy-filter, pick a command, and it's printed to stdout.
-
-## Installation
-
-```sh
-go install canon@latest
-```
 
 ### ZSH keybinding
 

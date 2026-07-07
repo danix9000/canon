@@ -1,0 +1,25 @@
+version: 2
+
+builds:
+  - main: .
+    binary: canon
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+
+archives:
+  - formats: [tar.gz]
+    files:
+      - none*
+
+brews:
+  - repository:
+      owner: danix9000
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    name: canon
+    homepage: "https://github.com/danix9000/canon"
+    description: "A fuzzy command launcher for your terminal"
+    install: |
+      bin.install "canon"
+    test: |
+      system bin/"canon", "--help"
