@@ -3,11 +3,11 @@ module canon
 go 1.25.5
 
 require (
-	github.com/mattn/go-runewidth v0.0.16
-	golang.org/x/term v0.28.0
+	github.com/mattn/go-runewidth v0.0.24
+	golang.org/x/term v0.44.0
 )
 
 require (
-	github.com/rivo/uniseg v0.2.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
 )
