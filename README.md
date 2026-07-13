@@ -26,15 +26,10 @@ Launch `canon`, type to fuzzy-filter, pick a command, and it's printed to stdout
 
 ### ZSH keybinding
 
-Add to your `.zshrc` to bind Canon to `Ctrl+Y`:
+Add to your `.zshrc`:
 
 ```zsh
-canon_widget() {
-  LBUFFER="$(canon)"
-  local ret=$?
-  zle reset-prompt
-  return $ret
-}
-zle -N canon_widget
-bindkey '^y' canon_widget
+source <(canon --zsh)
 ```
+
+This binds Canon to `Ctrl+Y`. Press it to launch the picker and insert the selected command.

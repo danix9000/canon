@@ -81,12 +81,7 @@ case "$command" in
       PROMPT="> "
 
       alias canon="$(pwd)/canon"
-
-      canon_widget() {
-        LBUFFER=\$(canon)
-        zle redisplay
-      }
-      zle -N canon_widget
+      source <(canon --zsh)
       bindkey '^]' canon_widget
 
       export HOME="$home"

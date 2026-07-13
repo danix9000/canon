@@ -10,7 +10,22 @@ import (
 	"github.com/mattn/go-runewidth"
 )
 
+const zshIntegration = `canon_widget() {
+  LBUFFER="$(canon)"
+  local ret=$?
+  zle reset-prompt
+  return $ret
+}
+zle -N canon_widget
+bindkey '^y' canon_widget
+`
+
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "--zsh" {
+		fmt.Print(zshIntegration)
+		return
+	}
+
 	result, err := run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
