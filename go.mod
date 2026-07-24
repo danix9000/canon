@@ -3,7 +3,7 @@ module canon
 go 1.25.5
 
 require (
-	github.com/mattn/go-runewidth v0.0.24
+	github.com/mattn/go-runewidth v0.0.27
 	golang.org/x/term v0.45.0
 )
 
